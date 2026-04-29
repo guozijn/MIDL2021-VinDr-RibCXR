@@ -27,7 +27,8 @@ def valid_model(_print, cfg, model, valid_loader,
     final_score = metric_function(preds, labels.long())[0].item()
     print(final_score)
 
-    _print(f"Validation {metric_name}: {final_score:04f}, val loss:{val_loss:05f} best: {best_metric:04f}\n")
+    best_metric_log = best_metric if best_metric is not None else final_score
+    _print(f"Validation {metric_name}: {final_score:04f}, val loss:{val_loss:05f} best: {best_metric_log:04f}\n")
 
 
     # checkpoint
@@ -44,4 +45,4 @@ def valid_model(_print, cfg, model, valid_loader,
             print("score improved, saving new checkpoint...")
             save_checkpoint(save_dict, is_best,
                             root=cfg.DIRS.WEIGHTS, filename=save_filename)
-        return val_loss, best_metric
+    return val_loss.item(), final_score, best_metric

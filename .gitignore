@@ -32,6 +32,11 @@ htmlcov/
 # Jupyter
 .ipynb_checkpoints/
 
+# Training outputs
+logs/
+weights/
+outputs/
+
 # Local environment files
 .env
 .env.*

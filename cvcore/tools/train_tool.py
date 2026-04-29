@@ -44,5 +44,5 @@ def train_loop(_print, cfg, model, train_loader,
 
     _print("Train loss: %.5f, learning rate: %.6f" %
            (losses.avg, optimizer.param_groups[-1]['lr']))
-
+    return losses.avg
 

@@ -10,6 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.cuda.amp import GradScaler
+from torch.utils.tensorboard import SummaryWriter
 from sklearn.metrics import accuracy_score
 from cvcore.config import get_cfg_defaults
 from cvcore.model import build_model
@@ -81,13 +82,24 @@ def main(args, cfg):
         if cfg.METRIC.NAME == 'dice':
             valid_metric = DiceMetric(include_background=True,reduction= 'mean')
     if args.mode == "train":
-        for epoch in range(start_epoch, cfg.TRAIN.EPOCHES[-1]):
-            train_loop(logger.info, cfg, model,
-                       train_loader, train_criterion, optimizer,
-                       scheduler, epoch, scaler)
-            _, best_metric = valid_model(logger.info, cfg, model,
-                                        valid_loader, valid_criterion,
-                                        valid_metric, epoch, best_metric, True)
+        tensorboard_dir = os.path.join(cfg.DIRS.LOGS, "tensorboard", cfg.NAME)
+        writer = SummaryWriter(log_dir=tensorboard_dir)
+        logger.info(f"TensorBoard logs: {tensorboard_dir}")
+        try:
+            for epoch in range(start_epoch, cfg.TRAIN.EPOCHES[-1]):
+                train_loss = train_loop(logger.info, cfg, model,
+                                        train_loader, train_criterion, optimizer,
+                                        scheduler, epoch, scaler)
+                val_loss, val_metric, best_metric = valid_model(logger.info, cfg, model,
+                                                                valid_loader, valid_criterion,
+                                                                valid_metric, epoch, best_metric, True)
+                writer.add_scalar("Loss/train", train_loss, epoch + 1)
+                writer.add_scalar("Loss/val", val_loss, epoch + 1)
+                writer.add_scalar(f"Metric/val_{cfg.METRIC.NAME}", val_metric, epoch + 1)
+                writer.add_scalar("LR", optimizer.param_groups[-1]["lr"], epoch + 1)
+                writer.flush()
+        finally:
+            writer.close()
     elif args.mode == "val":
         valid_model(logger.info, cfg, model,
                     valid_loader, valid_criterion,

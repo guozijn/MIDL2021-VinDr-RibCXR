@@ -17,7 +17,8 @@ LOSS:
   NAME: "dice"
 METRIC:
   NAME: "dice"
-SOLVER:  
+SOLVER:
+  OPTIMIZER: "adamw"  
   ADAM_EPS: 1e-6
   WARMUP_LENGTH: 5
   GD_STEPS: 1
