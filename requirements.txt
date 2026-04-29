@@ -1,0 +1,25 @@
+# Dependencies for the project
+
+# Core dependencies
+pandas
+numpy
+torch
+scikit-learn
+
+# Segmentation and medical imaging libraries
+segmentation-models-pytorch
+monai
+
+# Configuration and augmentation
+yacs
+albumentations
+
+# Visualization
+matplotlib
+Pillow
+
+# Additional utilities
+torchvision
+opencv-python-headless
+timm
+tqdm
