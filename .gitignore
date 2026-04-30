@@ -33,6 +33,7 @@ htmlcov/
 .ipynb_checkpoints/
 
 # Training outputs
+data/
 logs/
 weights/
 outputs/
