@@ -20,8 +20,8 @@ def train_loop(_print, cfg, model, train_loader,
     for i, (image, target) in enumerate(tbar):
         target[target!=0]=1
         target=target.long()
-        image = image.to(device='cuda',dtype=torch.float)
-        target = target.to(device='cuda')
+        image = image.to(device='cuda', dtype=torch.float, non_blocking=True)
+        target = target.to(device='cuda', non_blocking=True)
         with autocast():
             loss = criterion(model(image), target)
             # gradient accumulation
@@ -45,4 +45,3 @@ def train_loop(_print, cfg, model, train_loader,
     _print("Train loss: %.5f, learning rate: %.6f" %
            (losses.avg, optimizer.param_groups[-1]['lr']))
     return losses.avg
-

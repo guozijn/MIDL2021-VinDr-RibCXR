@@ -23,6 +23,16 @@ from monai.metrics import DiceMetric
 from monai.losses import DiceLoss
 scaler = GradScaler()
 
+def format_duration(seconds):
+    seconds = int(seconds)
+    hours, remainder = divmod(seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    if hours:
+        return f"{hours}h {minutes:02d}m {seconds:02d}s"
+    if minutes:
+        return f"{minutes}m {seconds:02d}s"
+    return f"{seconds}s"
+
 def main(args, cfg):
     # Set logger
     logger = setup_logger(
@@ -85,18 +95,41 @@ def main(args, cfg):
         tensorboard_dir = os.path.join(cfg.DIRS.LOGS, "tensorboard", cfg.NAME)
         writer = SummaryWriter(log_dir=tensorboard_dir)
         logger.info(f"TensorBoard logs: {tensorboard_dir}")
+        total_epochs = cfg.TRAIN.EPOCHES[-1]
+        train_start_time = time.time()
         try:
-            for epoch in range(start_epoch, cfg.TRAIN.EPOCHES[-1]):
+            for epoch in range(start_epoch, total_epochs):
+                epoch_start_time = time.time()
                 train_loss = train_loop(logger.info, cfg, model,
                                         train_loader, train_criterion, optimizer,
                                         scheduler, epoch, scaler)
+                train_seconds = time.time() - epoch_start_time
+                val_start_time = time.time()
                 val_loss, val_metric, best_metric = valid_model(logger.info, cfg, model,
                                                                 valid_loader, valid_criterion,
                                                                 valid_metric, epoch, best_metric, True)
+                val_seconds = time.time() - val_start_time
+                epoch_seconds = time.time() - epoch_start_time
+                completed_epochs = epoch + 1 - start_epoch
+                remaining_epochs = total_epochs - epoch - 1
+                avg_epoch_seconds = (time.time() - train_start_time) / completed_epochs
+                eta_seconds = avg_epoch_seconds * remaining_epochs
+                logger.info(
+                    "Epoch %d/%d time: %s (train %s, val %s), ETA: %s",
+                    epoch + 1,
+                    total_epochs,
+                    format_duration(epoch_seconds),
+                    format_duration(train_seconds),
+                    format_duration(val_seconds),
+                    format_duration(eta_seconds),
+                )
                 writer.add_scalar("Loss/train", train_loss, epoch + 1)
                 writer.add_scalar("Loss/val", val_loss, epoch + 1)
                 writer.add_scalar(f"Metric/val_{cfg.METRIC.NAME}", val_metric, epoch + 1)
                 writer.add_scalar("LR", optimizer.param_groups[-1]["lr"], epoch + 1)
+                writer.add_scalar("Time/epoch_sec", epoch_seconds, epoch + 1)
+                writer.add_scalar("Time/train_sec", train_seconds, epoch + 1)
+                writer.add_scalar("Time/val_sec", val_seconds, epoch + 1)
                 writer.flush()
         finally:
             writer.close()

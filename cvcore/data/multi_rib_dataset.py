@@ -51,6 +51,16 @@ class multi_ribs_dataset(Dataset):
 def make_multi_ribs_dataloader(cfg,mode='train'):
     df_train= pd.read_json(cfg.DATA.JSON.TRAIN)
     df_val=pd.read_json(cfg.DATA.JSON.VAL)
+    num_workers = cfg.SYSTEM.NUM_WORKERS
+    dataloader_kwargs = {
+        "num_workers": num_workers,
+        "pin_memory": True,
+    }
+    if num_workers > 0:
+        dataloader_kwargs.update({
+            "persistent_workers": True,
+            "prefetch_factor": 2,
+        })
     list_label=['R1','R2','R3','R4','R5','R6','R7','R8','R9','R10',\
                          'L1','L2','L3','L4','L5','L6','L7','L8','L9','L10']
     data_transform= {
@@ -68,7 +78,7 @@ def make_multi_ribs_dataloader(cfg,mode='train'):
     }
     if mode=='train':
         ribs_dataset_train= multi_ribs_dataset(df_train,data_transform,mode,list_label)
-        return (DataLoader(dataset=ribs_dataset_train,batch_size=cfg.TRAIN.BATCH_SIZE,shuffle=True))
+        return (DataLoader(dataset=ribs_dataset_train,batch_size=cfg.TRAIN.BATCH_SIZE,shuffle=True, **dataloader_kwargs))
     elif mode=='val':
         ribs_dataset_val= multi_ribs_dataset(df_val,data_transform,mode,list_label)
-        return (DataLoader(dataset=ribs_dataset_val,batch_size=1,shuffle=False))
+        return (DataLoader(dataset=ribs_dataset_val,batch_size=cfg.TRAIN.BATCH_SIZE,shuffle=False, **dataloader_kwargs))

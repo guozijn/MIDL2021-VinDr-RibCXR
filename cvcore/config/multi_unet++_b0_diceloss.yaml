@@ -1,4 +1,4 @@
-NAME: 'multi_unet++(b0)_DiceLoss.yaml'
+NAME: 'multi_unetpp_b0_dice'
 
 
 
@@ -27,7 +27,7 @@ SOLVER:
   BASE_LR: 1e-3
 
 TRAIN:
-  BATCH_SIZE: 8
+  BATCH_SIZE: 16
   EPOCHES: [200]
 
 SYSTEM:
