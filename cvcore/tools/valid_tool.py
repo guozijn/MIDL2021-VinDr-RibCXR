@@ -17,12 +17,14 @@ def valid_model(_print, cfg, model, valid_loader,
     with torch.no_grad():
         for i, (image, label) in enumerate(tbar):
             image = image.to(device='cuda',dtype=torch.float)
-            w_output = model(image)>0.5
-            preds.append(w_output.cpu())
+            output = model(image)
+            w_output = torch.sigmoid(output) > 0.5
+            preds.append((output.cpu(), w_output.cpu()))
             labels.append(label.cpu())
     metric_name= cfg.METRIC.NAME
-    preds, labels = torch.cat(preds, 0), torch.cat(labels, 0)
-    val_loss = loss_function(preds.float(), labels)
+    logits, preds = zip(*preds)
+    logits, preds, labels = torch.cat(logits, 0), torch.cat(preds, 0), torch.cat(labels, 0)
+    val_loss = loss_function(logits.float(), labels)
     scores = []
     final_score = metric_function(preds, labels.long())[0].item()
     print(final_score)

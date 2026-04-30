@@ -16,7 +16,7 @@ from monai.networks.nets import Unet,BasicUnet
 def build_model(cfg):
 
     if 'unet()'== cfg.MODEL.NAME:
-        model= Unet(dimensions=2,in_channels=cfg.DATA.INP_CHANNEL,out_channels=cfg.MODEL.NUM_CLASSES,\
+        model= Unet(spatial_dims=2,in_channels=cfg.DATA.INP_CHANNEL,out_channels=cfg.MODEL.NUM_CLASSES,\
         channels=(16, 32, 64, 128, 256),strides=(2, 2, 2, 2),num_res_units=2,dropout=cfg.MODEL.DROPOUT)
     elif 'unet(resnet18)'== cfg.MODEL.NAME:
         model= smp.Unet('resnet18',classes=cfg.MODEL.NUM_CLASSES,encoder_weights='imagenet',in_channels=cfg.DATA.INP_CHANNEL)
@@ -34,7 +34,8 @@ def build_model(cfg):
         model= smp.Unet('efficientnet-b3',classes=cfg.MODEL.NUM_CLASSES,encoder_weights='imagenet'\
         ,in_channels=cfg.DATA.INP_CHANNEL)
     elif 'unet++()'== cfg.MODEL.NAME:
-        model=NestedUNet(cfg)
+        model=smp.UnetPlusPlus(classes=cfg.MODEL.NUM_CLASSES,encoder_weights=None\
+        ,in_channels=cfg.DATA.INP_CHANNEL)
     elif 'unet++(resnet101)'== cfg.MODEL.NAME:
         model=smp.UnetPlusPlus('resnet101',classes=cfg.MODEL.NUM_CLASSES,encoder_weights='imagenet'\
         ,in_channels=cfg.DATA.INP_CHANNEL)
@@ -50,4 +51,6 @@ def build_model(cfg):
     elif 'unet++(b3)'== cfg.MODEL.NAME:
         model= smp.UnetPlusPlus('efficientnet-b3',classes=cfg.MODEL.NUM_CLASSES,encoder_weights='imagenet'\
         ,in_channels=cfg.DATA.INP_CHANNEL)
+    else:
+        raise ValueError(f"Unknown model name: {cfg.MODEL.NAME}")
     return model
