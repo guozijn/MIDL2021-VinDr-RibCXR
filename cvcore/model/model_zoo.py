@@ -9,7 +9,7 @@ import os
 
 import torchvision
 import timm
-from timm.models.layers.adaptive_avgmax_pool import SelectAdaptivePool2d
+from timm.layers import SelectAdaptivePool2d
 import segmentation_models_pytorch as smp
 from monai.networks.nets import Unet,BasicUnet 
 

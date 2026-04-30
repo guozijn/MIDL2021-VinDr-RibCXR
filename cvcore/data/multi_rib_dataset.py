@@ -1,6 +1,6 @@
 import albumentations
 from albumentations import Compose, HorizontalFlip, Normalize, VerticalFlip, Rotate, Resize, ShiftScaleRotate, OneOf, GridDistortion, OpticalDistortion, \
-    ElasticTransform, IAAAdditiveGaussianNoise, GaussNoise, MedianBlur,  Blur, CoarseDropout,RandomBrightnessContrast
+    ElasticTransform, GaussNoise, MedianBlur,  Blur, CoarseDropout,RandomBrightnessContrast
 from albumentations.pytorch import ToTensorV2
 import torch.nn as nn
 import matplotlib.pyplot as plt
