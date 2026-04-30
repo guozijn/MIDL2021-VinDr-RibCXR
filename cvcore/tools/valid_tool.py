@@ -10,6 +10,8 @@ def valid_model(_print, cfg, model, valid_loader,
                 best_metric=None, checkpoint=False):
     # switch to evaluate mode
     model.eval()
+    if hasattr(metric_function, "reset"):
+        metric_function.reset()
     preds = []
     labels = []
     tbar = tqdm(valid_loader)
@@ -25,9 +27,12 @@ def valid_model(_print, cfg, model, valid_loader,
     logits, preds = zip(*preds)
     logits, preds, labels = torch.cat(logits, 0), torch.cat(preds, 0), torch.cat(labels, 0)
     val_loss = loss_function(logits.float(), labels)
-    scores = []
-    final_score = metric_function(preds, labels.long())[0].item()
-    print(final_score)
+    final_score_tensor = metric_function(preds, labels.long())
+    if hasattr(metric_function, "aggregate"):
+        final_score_tensor = metric_function.aggregate()
+    final_score = torch.nanmean(final_score_tensor.float()).item()
+    if hasattr(metric_function, "reset"):
+        metric_function.reset()
 
     best_metric_log = best_metric if best_metric is not None else final_score
     _print(f"Validation {metric_name}: {final_score:04f}, val loss:{val_loss:05f} best: {best_metric_log:04f}\n")
